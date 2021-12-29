@@ -10,6 +10,10 @@
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
+	"dependencies": {
+		"obsidian": "obsidianmd/obsidian-api#master",
+		"obsidian-daily-notes-interface": "^0.3.0"
+	},
 	"devDependencies": {
 		"@types/node": "^16.11.6",
 		"@typescript-eslint/eslint-plugin": "^5.2.0",

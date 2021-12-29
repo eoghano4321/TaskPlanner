@@ -1,4 +1,7 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import type {Moment, WeekSpec} from 'moment';
+import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
+  
 
 import {SETTINGS} from "./Settings";
 // These are the default values for the settings
@@ -12,14 +15,34 @@ const DefaultPluginSettings: SETTINGS = {
 	StatusBar : false
 }
 
+let date: Moment;
+ 
+
+declare global {
+	interface Window {
+	  app: App;
+	  moment: () => Moment;
+	  _bundledLocaleWeekSpec: WeekSpec;
+	}
+  }
+
 export default class MyPlugin extends Plugin {
 	settings = DefaultPluginSettings;
 
 	async onload(){
 		await this.loadSettings();
 
-	}
 
+		this.addCommand({
+			id: 'open_task_planner',
+			name: 'Open Task Planner Note',
+			callback: () => {
+				createDailyNote(date)
+			}
+			
+		});
+
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, this.settings.OpenOnStart, await this.loadData());
