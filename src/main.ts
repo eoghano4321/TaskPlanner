@@ -17,7 +17,6 @@ export default class MyPlugin extends Plugin {
 
 	async onload(){
 		await this.loadSettings();
-		
 
 	}
 
