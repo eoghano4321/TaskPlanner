@@ -1,0 +1,1 @@
+import {DefaultPluginSettings } from './main'
