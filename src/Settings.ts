@@ -5,4 +5,5 @@ export interface SETTINGS {
     SideButton: boolean;
     SendNotifs: boolean;
     StatusBar: boolean;
+    CustomFolder: string;
 }

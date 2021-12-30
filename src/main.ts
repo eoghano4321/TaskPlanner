@@ -12,7 +12,8 @@ export const DefaultPluginSettings: SETTINGS = {
 	OpenOnStart : false,
 	SideButton : false,
 	SendNotifs : false,
-	StatusBar : false
+	StatusBar : false,
+	CustomFolder: 'Task_Planners'
 }
 
 let date: Moment;
@@ -41,7 +42,7 @@ export default class MyTaskPlugin extends Plugin {
 
 		this.addSettingTab(new SettingTab(this.app, this));
 
-		// TODO Create a script to handle note creation
+		// TODO Create a script to open note on startup
 		this.addCommand({
 			id: 'open_task_planner',
 			name: 'Open Task Planner Note',
@@ -53,6 +54,8 @@ export default class MyTaskPlugin extends Plugin {
 			}	
 		});
 
+		// TODO add a function to create a folder if 1 doesn't exist
+		// TODO add date to fille name
 		this.addCommand({
 			id: 'create_task_note',
 			name: 'Create a Task Planner Note',
