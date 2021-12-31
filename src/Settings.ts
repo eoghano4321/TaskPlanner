@@ -1,9 +1,11 @@
 import { App, Editor} from 'obsidian'
 
 export class SETTINGS {
-    OpenOnStart: boolean;
-    SideButton: boolean;
-    SendNotifs: boolean;
-    StatusBar: boolean;
-    CustomFolder: string;
+    OpenOnStart: boolean = false;
+    SideButton: boolean = false;
+    SendNotifs: boolean = false;
+    CustomFolder: string = 'TaskPlanners';
+    CustomFile: string = 'Task_Planner';
+    DateFormat: string = "DDMMYY";
+    StatusBar: boolean = false;
 }

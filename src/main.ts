@@ -1,21 +1,13 @@
 import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, ToggleComponent, Vault, normalizePath } from 'obsidian';
-import type {Moment, WeekSpec} from 'moment';
+import type {Moment, WeekSpec } from 'moment';
+import { moment } from 'obsidian';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
 
 import {SETTINGS} from "./Settings";
-// These are the default values for the settings
+import { text } from 'stream/consumers';
 // TODO - Add the ability to change those settings in the settings tab & have those values saved
-// TODO - Have the settings variable check the loaded settings after await this.loadSettings(); and replace the defaults with those values
-// TODO - Import a variable custom folder from the save data. Do not use the interface below as the path ends with undefined and doesn't work
 
-export const DefaultPluginSettings: SETTINGS = {
-	OpenOnStart : false,
-	SideButton : false,
-	SendNotifs : false,
-	StatusBar : false,
-	CustomFolder: `Task_Planners.md`,
-}
 
 let date: Moment;
  
@@ -30,8 +22,9 @@ declare global {
 
 export default class MyTaskPlugin extends Plugin {
 	vault : Vault = this.app.vault;
-	settings = DefaultPluginSettings;
+	settings: SETTINGS;
 	ribbonIconEl: HTMLElement | undefined = undefined;
+	
 	
 
 	async loadSettings() {
@@ -45,12 +38,11 @@ export default class MyTaskPlugin extends Plugin {
 	async onload(){
 		await this.loadSettings();
 		this.add_side_button();
-		
 
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
 
-		new Notice(`${this.settings.SideButton}`)
+		this.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
 
 		this.addSettingTab(new SettingTab(this.app, this));
 
@@ -76,7 +68,7 @@ export default class MyTaskPlugin extends Plugin {
 			id: 'create_task_note',
 			name: 'Create a Task Planner Note',
 			callback: () => {
-				this.createFileIfNotExists(`Task_Planner.md`);
+				this.createFileIfNotExists(this.settings.CustomFile);
 				
 				
 				// if (!FileExists){
@@ -102,15 +94,16 @@ export default class MyTaskPlugin extends Plugin {
 	public send_notif(message: string = `This is a test notification`, test?: boolean) {
 		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (markdownView) {
-			new Notification(`Test Notif`, { body: message + `${test}`, requireInteraction: true });
+			new Notification(`Test Notif`, { body: message, requireInteraction: true });
 			
 		}
 	}
 
 	async createFileIfNotExists(fileName: string) {
-		this.send_notif('DEBUG1')
+		await this.createFolderIfNotExists(this.settings.CustomFolder)
         try {
-            const normalizedFileName = normalizePath(fileName);
+			
+            const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
                 await this.vault.create(normalizedFileName, `## TAslks
 				- []`);
@@ -124,6 +117,19 @@ export default class MyTaskPlugin extends Plugin {
         }
     }
 
+	async createFolderIfNotExists(folderName: string){
+		try {
+            const normalizedPath = normalizePath(folderName);
+            const folderExists = await this.vault.adapter.exists(normalizedPath, false)
+            if(!folderExists) {
+              await this.vault.createFolder(normalizedPath);
+            }
+        } catch (error) {
+            new Notice(error)
+        }
+
+	}
+
 	public add_side_button(){
 		if (this.settings.SideButton ){
 			this.ribbonIconEl?.remove();
@@ -131,23 +137,24 @@ export default class MyTaskPlugin extends Plugin {
 				// Called when the user clicks the icon.
 			//	new Notice('Plugin clicked!');
 				new Notice('opening file', 0.2)
-				this.open_note(`Task_Planner.md`);
+				this.open_note(this.settings.CustomFile);
 			});
 		}
 
 
 	}
 
-	async open_note(note: string = `Task_Planner.md`){
+	async open_note(note: string = `Task_Planner`){
 		try{
-			if (await this.vault.adapter.exists(await normalizePath(note), false)) {
+			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`), false)) {
 				new Notice('File exists ... opening')
-				await this.app.workspace.openLinkText(note, '', true, {
+				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`, '', true, {
 					active: true,
 				});
 			}
 			else{
-				new Notice('File doesn\'t exist')
+				new Notice('File doesn\'t exist .... Creating file')
+				this.createFileIfNotExists(note)
 			}
 		} catch (error){
 			this.send_notif(`Error ${error}`);
@@ -202,7 +209,17 @@ export class SettingTab extends PluginSettingTab {
 						this.plugin.saveSettings();
 						//await this.plugin.loadSettings();
 				}));	
-			
+		
+		new Setting(containerEl)
+				.setName('Custom Folder')
+				.setDesc('Set a custom folder to save the task notes in')
+				.addText(text => text
+					.setPlaceholder('Folder')
+					.setValue(this.plugin.settings.CustomFolder)
+					.onChange(async (value) => {
+						this.plugin.settings.CustomFolder = value;
+						await this.plugin.saveSettings();
+					}))
 
 			// .addText(text => text
 			// 	.setPlaceholder('Enter here')
