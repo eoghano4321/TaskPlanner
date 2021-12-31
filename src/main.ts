@@ -7,13 +7,14 @@ import {SETTINGS} from "./Settings";
 // These are the default values for the settings
 // TODO - Add the ability to change those settings in the settings tab & have those values saved
 // TODO - Have the settings variable check the loaded settings after await this.loadSettings(); and replace the defaults with those values
+// TODO - Import a variable custom folder from the save data. Do not use the interface below as the path ends with undefined and doesn't work
 
 export const DefaultPluginSettings: SETTINGS = {
 	OpenOnStart : false,
 	SideButton : false,
 	SendNotifs : false,
 	StatusBar : false,
-	CustomFolder: 'Task_Planners'
+	CustomFolder: `Task_Planners.md`,
 }
 
 let date: Moment;
@@ -30,17 +31,31 @@ declare global {
 export default class MyTaskPlugin extends Plugin {
 	vault : Vault = this.app.vault;
 	settings = DefaultPluginSettings;
+	ribbonIconEl: HTMLElement | undefined = undefined;
+	
 
+	async loadSettings() {
+		// this.settings = Object.assign({}, this.settings, await this.loadData());
+		this.settings = Object.assign(new SETTINGS(), await this.loadData());
+		//this.add_side_button();
+	}
 
 
 
 	async onload(){
 		await this.loadSettings();
+		this.add_side_button();
+		
 
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
 
+		new Notice(`${this.settings.SideButton}`)
+
 		this.addSettingTab(new SettingTab(this.app, this));
+
+
+
 
 		// TODO Create a script to open note on startup
 		this.addCommand({
@@ -49,7 +64,8 @@ export default class MyTaskPlugin extends Plugin {
 			callback: () => {
 				//(file) => {
 				// activeFile.setFile(file).createDailyNote(date)
-				this.send_notif();
+				new Notice('opening file', 0.2)
+				this.open_note()
 				//}.
 			}	
 		});
@@ -60,7 +76,7 @@ export default class MyTaskPlugin extends Plugin {
 			id: 'create_task_note',
 			name: 'Create a Task Planner Note',
 			callback: () => {
-				this.createFileIfNotExists('TAskPlanner.md');
+				this.createFileIfNotExists(`Task_Planner.md`);
 				
 				
 				// if (!FileExists){
@@ -76,8 +92,11 @@ export default class MyTaskPlugin extends Plugin {
 
 	}
 
-	async loadSettings() {
-		this.settings = Object.assign({}, this.settings.OpenOnStart, await this.loadData());
+	
+
+	async saveSettings(){
+		await this.saveData(this.settings);
+
 	}
 
 	public send_notif(message: string = `This is a test notification`, test?: boolean) {
@@ -104,7 +123,41 @@ export default class MyTaskPlugin extends Plugin {
             this.send_notif(`Error ${error}`)
         }
     }
+
+	public add_side_button(){
+		if (this.settings.SideButton ){
+			this.ribbonIconEl?.remove();
+			this.ribbonIconEl = this.addRibbonIcon('crossed-star', 'Open Task Planner', (evt: MouseEvent) => {
+				// Called when the user clicks the icon.
+			//	new Notice('Plugin clicked!');
+				new Notice('opening file', 0.2)
+				this.open_note(`Task_Planner.md`);
+			});
+		}
+
+
+	}
+
+	async open_note(note: string = `Task_Planner.md`){
+		try{
+			if (await this.vault.adapter.exists(await normalizePath(note), false)) {
+				new Notice('File exists ... opening')
+				await this.app.workspace.openLinkText(note, '', true, {
+					active: true,
+				});
+			}
+			else{
+				new Notice('File doesn\'t exist')
+			}
+		} catch (error){
+			this.send_notif(`Error ${error}`);
+			
+		}
+	}
+
 }
+
+
 
 export class SettingTab extends PluginSettingTab {
 	plugin: MyTaskPlugin;
@@ -131,6 +184,7 @@ export class SettingTab extends PluginSettingTab {
 					.onChange( async (value: boolean) => {	
 						this.plugin.settings.OpenOnStart = value;
 						this.plugin.send_notif(`This is the on start setting `,this.plugin.settings.OpenOnStart);
+						this.plugin.saveSettings();
 						//await this.plugin.loadSettings();
 				}));
 			
@@ -144,6 +198,8 @@ export class SettingTab extends PluginSettingTab {
 					.onChange( async (value: boolean) => {	
 						this.plugin.settings.SideButton = value;
 						this.plugin.send_notif(`This is the sidebutton setting `, this.plugin.settings.SideButton);
+						this.plugin.add_side_button();
+						this.plugin.saveSettings();
 						//await this.plugin.loadSettings();
 				}));	
 			

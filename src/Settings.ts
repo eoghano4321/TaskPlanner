@@ -1,6 +1,6 @@
 import { App, Editor} from 'obsidian'
 
-export interface SETTINGS {
+export class SETTINGS {
     OpenOnStart: boolean;
     SideButton: boolean;
     SendNotifs: boolean;
