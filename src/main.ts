@@ -1,6 +1,5 @@
-import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, ToggleComponent, Vault, normalizePath } from 'obsidian';
+import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, ToggleComponent, Vault, normalizePath, moment } from 'obsidian';
 import type {Moment, WeekSpec } from 'moment';
-import { moment } from 'obsidian';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
 
@@ -106,7 +105,7 @@ export default class MyTaskPlugin extends Plugin {
             const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
                 await this.vault.create(normalizedFileName, `## TAslks
-				- []`);
+- [ ] `);
 				this.send_notif(normalizedFileName)
             }
 			else{
@@ -220,7 +219,17 @@ export class SettingTab extends PluginSettingTab {
 						this.plugin.settings.CustomFolder = value;
 						await this.plugin.saveSettings();
 					}))
-
+		
+		new Setting(containerEl)
+				.setName('Date Format')
+				.setDesc('Date format for file name and task due dates')
+				.addText(text => text
+					.setPlaceholder('Date')
+					.setValue(this.plugin.settings.DateFormat)
+					.onChange(async (value) => {
+						this.plugin.settings.DateFormat = value;
+						await this.plugin.saveSettings();
+					}))
 			// .addText(text => text
 			// 	.setPlaceholder('Enter here')
 			// 	.setValue(this.plugin.settings.mySetting)
