@@ -105,8 +105,13 @@ export default class MyTaskPlugin extends Plugin {
             const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
                 await this.vault.create(normalizedFileName, `## TAslks
+- [ ] Testing
+- [ ] 
+- [ ] 
 - [ ] `);
 				this.send_notif(normalizedFileName)
+				this.open_note(this.settings.CustomFile)
+				this.parse_for_tasks()
             }
 			else{
 				this.send_notif(`File ${normalizedFileName} already exists`, true)
@@ -161,7 +166,21 @@ export default class MyTaskPlugin extends Plugin {
 		}
 	}
 
+	async parse_for_tasks(){
+		this.send_notif()
+		const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + this.settings.CustomFile + `.md`);
+		if (await this.vault.adapter.exists(normalizedFileName, false)){
+			// this.send_notif()
+			// normalizedFileName.search('-[ ]')
+			let file_contents = (await this.vault.adapter.read(normalizedFileName)).replace(/\-\s\[\s\]/g, '- [x]');
+			this.vault.adapter.write(normalizedFileName, file_contents)
+			// normalizedFileName.
+		}
+		
+	}
+
 }
+
 
 
 
@@ -222,7 +241,7 @@ export class SettingTab extends PluginSettingTab {
 		
 		new Setting(containerEl)
 				.setName('Date Format')
-				.setDesc('Date format for file name and task due dates')
+				.setDesc('Date format for file name and task due dates\nDates in preexisting files need to be changed manually\nAutomatic date fixing coming soon')
 				.addText(text => text
 					.setPlaceholder('Date')
 					.setValue(this.plugin.settings.DateFormat)
