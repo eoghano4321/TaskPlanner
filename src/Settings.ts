@@ -6,6 +6,6 @@ export class SETTINGS {
     SendNotifs: boolean = false;
     CustomFolder: string = 'TaskPlanners';
     CustomFile: string = 'Task_Planner';
-    DateFormat: string = "DDMMYY";
+    DateFormat: string = "DDMMYYYY";
     StatusBar: boolean = false;
 }
