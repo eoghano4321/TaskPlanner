@@ -2,7 +2,8 @@ import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSetti
 import type {Moment, WeekSpec } from 'moment';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
-
+import {FileCreator} from "./CreateTaskNote"
+import { Notifications } from './Notifs';
 import {SETTINGS} from "./Settings";
 // import { text } from 'stream/consumers';
 // import { send } from 'process';
@@ -24,10 +25,11 @@ declare global {
   }
 
 export default class MyTaskPlugin extends Plugin {
-	vault : Vault = this.app.vault;
+	vault : Vault;
 	settings: SETTINGS;
 	ribbonIconEl: HTMLElement | undefined = undefined;
-	
+	filecreator : FileCreator;
+	notifications : Notifications
 	
 
 	async loadSettings() {
@@ -41,11 +43,13 @@ export default class MyTaskPlugin extends Plugin {
 	async onload(){
 		await this.loadSettings();
 		this.add_side_button();
+		
+		this.vault = this.app.vault;
 
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
 
-		this.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
+		this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
 
 		this.addSettingTab(new SettingTab(this.app, this));
 
@@ -60,7 +64,7 @@ export default class MyTaskPlugin extends Plugin {
 				//(file) => {
 				// activeFile.setFile(file).createDailyNote(date)
 				new Notice('opening file', 0.2)
-				this.open_note()
+				this.filecreator.open_note()
 				//}.
 			}	
 		});
@@ -71,7 +75,7 @@ export default class MyTaskPlugin extends Plugin {
 			id: 'create_task_note',
 			name: 'Create a Task Planner Note',
 			callback: () => {
-				this.createFileIfNotExists(this.settings.CustomFile);
+				this.filecreator.createFileIfNotExists(this.settings.CustomFile);
 				
 				
 				// if (!FileExists){
@@ -94,49 +98,9 @@ export default class MyTaskPlugin extends Plugin {
 
 	}
 
-	public send_notif(message: string = `This is a test notification`, test?: boolean) {
-		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (markdownView) {
-			new Notification(`Test Notif`, { body: message, requireInteraction: true });
-			
-		}
-	}
+	
 
-	async createFileIfNotExists(fileName: string) {
-		await this.createFolderIfNotExists(this.settings.CustomFolder)
-        try {
-			
-            const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
-            if (!await this.vault.adapter.exists(normalizedFileName, false)) {
-                await this.vault.create(normalizedFileName, `## TAslks
-- [ ] Testing
-- [ ] 
-- [ ] 
-- [ ] `);
-				this.send_notif(normalizedFileName)
-				this.open_note(this.settings.CustomFile)
-				this.parse_for_tasks()
-            }
-			else{
-				this.send_notif(`File ${normalizedFileName} already exists`, true)
-			}
-        } catch (error) {
-            this.send_notif(`Error ${error}`)
-        }
-    }
-
-	async createFolderIfNotExists(folderName: string){
-		try {
-            const normalizedPath = normalizePath(folderName);
-            const folderExists = await this.vault.adapter.exists(normalizedPath, false)
-            if(!folderExists) {
-              await this.vault.createFolder(normalizedPath);
-            }
-        } catch (error) {
-            new Notice(error)
-        }
-
-	}
+	
 
 	public add_side_button(){
 		if (this.settings.SideButton ){
@@ -145,73 +109,16 @@ export default class MyTaskPlugin extends Plugin {
 				// Called when the user clicks the icon.
 			//	new Notice('Plugin clicked!');
 				new Notice('opening file', 0.2)
-				this.open_note(this.settings.CustomFile);
+				this.filecreator.open_note(this.settings.CustomFile);
 			});
 		}
 
 
 	}
 
-	async open_note(note: string = `Task_Planner`){
-		try{
-			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`), false)) {
-				new Notice('File exists ... opening')
-				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`, '', true, {
-					active: true,
-				});
-			}
-			else{
-				new Notice('File doesn\'t exist .... Creating file')
-				this.createFileIfNotExists(note)
-			}
-		} catch (error){
-			this.send_notif(`Error ${error}`);
-			
-		}
-	}
+	
 
-	//ToDO Add task and date to todays file properly. Add ability to transfer more than 1 task
-
-	async parse_for_tasks(){
-		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s\d+\-\d+\-\d+\s)(\w+(\s|$))+$/gm) // /\-\s\[\s\]\s+[^\-\d]*[\d]/)///\w+\s/)//"^\\s+[A-Za-z]+[.?!]$")
-		
-
-		this.send_notif()
-		const yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(3, "days").format(this.settings.DateFormat) + `-` + this.settings.CustomFile + `.md`);
-		const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + this.settings.CustomFile + `.md`);
-		if (await this.vault.adapter.exists(yesterday_file, false)){
-			// this.send_notif()
-			// normalizedFileName.search('-[ ]')
-			let file_contents = (await this.vault.adapter.read(yesterday_file)).match(Regex);
-			let date_match = (await this.vault.adapter.read(yesterday_file)).split(/(\-|\/)/)
-			let date_string: string = (date_match[0] + date_match[1] + date_match[2])
-			let extracted_dates = date_string.match(/\d+/)
-		//	let file_array : any
-			//let date_match = (await this.vault.adapter.read(yesterday_file)).match(RegExp(/^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$/))
-			// let file_contents = (await this.vault.adapter.read(normalizedFileName))   //.search(/\-\s\[\s\]/g)         //await this.vault.adapter.read(normalizedFileName)).replace(/\-\s\[\s\]/g, '- [x]');
-			if (!file_contents){
-				new Notice("No Tasks in yesterdays note")
-			}else{
-				if (extracted_dates[0] != moment().format(this.settings.DateFormat)){
-					new Notice("No date" + extracted_dates[0])//(date_match[0])
-				}
-				if (extracted_dates[0] == moment().format(this.settings.DateFormat)){
-					this.send_notif("TASK DUE TODAY: ")
-					new Notice("Date" + extracted_dates[0])//(date_match[0])
-				}
-				
-				for (let j = 0; j <= file_contents.length; j++){
-				//	file_array.append(file_contents[j] + ")
-					this.vault.adapter.write(normalizedFileName, file_contents[j])
-					
-				
-				}// normalizedFileName.
-			}
-		} else{
-			new Notice("No File Exists")
-		}
-		
-	}
+	
 }
 
 
@@ -242,7 +149,7 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.OpenOnStart)
 					.onChange( async (value: boolean) => {	
 						this.plugin.settings.OpenOnStart = value;
-						this.plugin.send_notif(`This is the on start setting `,this.plugin.settings.OpenOnStart);
+						this.plugin.notifications.send_notif(`This is the on start setting `,this.plugin.settings.OpenOnStart);
 						this.plugin.saveSettings();
 						//await this.plugin.loadSettings();
 				}));
@@ -256,7 +163,7 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.SideButton)
 					.onChange( async (value: boolean) => {	
 						this.plugin.settings.SideButton = value;
-						this.plugin.send_notif(`This is the sidebutton setting `, this.plugin.settings.SideButton);
+						this.plugin.notifications.send_notif(`This is the sidebutton setting `, this.plugin.settings.SideButton);
 						this.plugin.add_side_button();
 						this.plugin.saveSettings();
 						//await this.plugin.loadSettings();
