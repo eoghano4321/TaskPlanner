@@ -3,11 +3,11 @@ import type {Moment, WeekSpec } from 'moment';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
 import {FileCreator} from "./CreateTaskNote"
-import { Notifications } from './Notifs';
+import {Notifications} from './Notifs';
 import {SETTINGS} from "./Settings";
 // import { text } from 'stream/consumers';
 // import { send } from 'process';
-// TODO - Add the ability to change those settings in the settings tab & have those values saved
+
 
 
 // This was removed from package.json as it was causing an issue with tsconfig
@@ -15,6 +15,8 @@ import {SETTINGS} from "./Settings";
 
 let date: Moment;
  
+
+
 
 declare global {
 	interface Window {
@@ -29,7 +31,7 @@ export default class MyTaskPlugin extends Plugin {
 	settings: SETTINGS;
 	ribbonIconEl: HTMLElement | undefined = undefined;
 	filecreator : FileCreator;
-	notifications : Notifications
+	notifications : Notifications 
 	
 
 	async loadSettings() {
@@ -45,6 +47,8 @@ export default class MyTaskPlugin extends Plugin {
 		this.add_side_button();
 		
 		this.vault = this.app.vault;
+		this.notifications = new Notifications(this.vault);
+		this.filecreator = new FileCreator(this.vault, this.app)
 
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
@@ -52,7 +56,7 @@ export default class MyTaskPlugin extends Plugin {
 		this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
 
 		this.addSettingTab(new SettingTab(this.app, this));
-
+		
 
 
 

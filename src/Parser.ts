@@ -1,9 +1,9 @@
 import { App, Notice, normalizePath, Vault, moment } from "obsidian"
-import { Notifications } from "./Notifs"
+import {Notifications} from "./Notifs"
 import { SETTINGS } from "./Settings";
 
 
-export class Parser {
+export default class Parser {
     notifications : Notifications;
     vault : Vault;
     settings : SETTINGS;
@@ -13,11 +13,12 @@ export class Parser {
         this.settings = settings
     }
 
+	
     //ToDO Add task and date to todays file properly. Add ability to transfer more than 1 task
 
 	async parse_for_tasks(){
 		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s\d+\-\d+\-\d+\s)(\w+(\s|$))+$/gm) // /\-\s\[\s\]\s+[^\-\d]*[\d]/)///\w+\s/)//"^\\s+[A-Za-z]+[.?!]$")
-		
+		this.notifications = new Notifications(this.vault)
 
 		this.notifications.send_notif()
 		const yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(5, "days").format(this.settings.DateFormat) + `-` + this.settings.CustomFile + `.md`);
