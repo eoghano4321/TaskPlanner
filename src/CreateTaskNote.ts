@@ -13,22 +13,24 @@ export  class FileCreator {
     notifications : Notifications;
     parser : Parser;
 
-    constructor(vault : Vault, app : App){
+    constructor(vault : Vault, app : App, settings : SETTINGS){
         this.vault = vault;
         this.app = app;
+        this.settings = settings;
+        this.parser = new Parser(this.vault, this.settings);
     }
 
+    
+
     async createFileIfNotExists(fileName: string) {
+        this.notifications = new Notifications(this.vault)
         await this.createFolderIfNotExists(this.settings.CustomFolder)
         try {
 
             const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
                 await this.vault.create(normalizedFileName, `## TAslks
-    - [ ] Testing
-    - [ ] 
-    - [ ] 
-    - [ ] `);
+- [ ] `);
                 this.notifications.send_notif(normalizedFileName)
                 this.open_note(this.settings.CustomFile)
                 this.parser.parse_for_tasks()

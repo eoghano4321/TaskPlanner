@@ -48,7 +48,7 @@ export default class MyTaskPlugin extends Plugin {
 		
 		this.vault = this.app.vault;
 		this.notifications = new Notifications(this.vault);
-		this.filecreator = new FileCreator(this.vault, this.app)
+		this.filecreator = new FileCreator(this.vault, this.app, this.settings)
 
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
@@ -107,16 +107,15 @@ export default class MyTaskPlugin extends Plugin {
 	
 
 	public add_side_button(){
-		if (this.settings.SideButton ){
-			this.ribbonIconEl?.remove();
+		this.ribbonIconEl?.remove();
+		if (this.settings.SideButton ){	
 			this.ribbonIconEl = this.addRibbonIcon('crossed-star', 'Open Task Planner', (evt: MouseEvent) => {
 				// Called when the user clicks the icon.
 			//	new Notice('Plugin clicked!');
-				new Notice('opening file', 0.2)
+				new Notice('opening file')
 				this.filecreator.open_note(this.settings.CustomFile);
 			});
 		}
-
 
 	}
 
