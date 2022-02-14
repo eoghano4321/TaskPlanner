@@ -24,19 +24,20 @@ export  class FileCreator {
 
     async createFileIfNotExists(fileName: string) {
         this.notifications = new Notifications(this.vault)
+        
         await this.createFolderIfNotExists(this.settings.CustomFolder)
         try {
 
             const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
-                await this.vault.create(normalizedFileName, `## TAslks
+                await this.vault.create(normalizedFileName, `## Tasks
 - [ ] `);
-                this.notifications.send_notif(normalizedFileName)
+                //this.notifications.send_notif(normalizedFileName)
                 this.open_note(this.settings.CustomFile)
                 this.parser.parse_for_tasks()
             }
             else{
-                this.notifications.send_notif(`File ${normalizedFileName} already exists`, true)
+                new Notice(`File ${normalizedFileName} already exists`)
             }
         } catch (error) {
             this.notifications.send_notif(`Error ${error}`)
@@ -60,9 +61,11 @@ export  class FileCreator {
 		try{
 			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`), false)) {
 				new Notice('File exists ... opening')
-				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`, '', true, {
+                
+				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`, '', false, {                    
 					active: true,
 				});
+                new Notice("Opened")
 			}
 			else{
 				new Notice('File doesn\'t exist .... Creating file')

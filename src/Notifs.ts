@@ -10,7 +10,11 @@ export class Notifications {
     }
 
     public send_notif(message: string = `This is a test notification`, test?: boolean) {
-		new Notification(`Test Notif`, { body: message, requireInteraction: true });
+		new Notification(`Task Planner`, { body: message, requireInteraction: true });
+	}
+
+    public send_task_notif(message: string = `This is a test notification`, header: string = `Task Due`) {
+		new Notification(header, { body: message, requireInteraction: true });
 	}
     
 }

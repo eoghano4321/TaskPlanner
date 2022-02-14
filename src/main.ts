@@ -40,7 +40,7 @@ export default class MyTaskPlugin extends Plugin {
 		//this.add_side_button();
 	}
 
-
+	
 
 	async onload(){
 		await this.loadSettings();
@@ -53,10 +53,14 @@ export default class MyTaskPlugin extends Plugin {
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
 
-		this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
+		// this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
 
 		this.addSettingTab(new SettingTab(this.app, this));
 		
+		if (this.settings.OpenOnStart){
+			await this.app.workspace.onLayoutReady
+			this.filecreator.open_note()
+		}
 
 
 
@@ -74,7 +78,7 @@ export default class MyTaskPlugin extends Plugin {
 		});
 
 		// TODO add a function to create a folder if 1 doesn't exist
-		// TODO add date to fille name
+		// TODO add date to file name
 		this.addCommand({
 			id: 'create_task_note',
 			name: 'Create a Task Planner Note',
