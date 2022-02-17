@@ -30,7 +30,7 @@ export  class FileCreator {
         await this.createFolderIfNotExists(this.settings.CustomFolder)
         try {
 
-            const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + fileName + `.md`);
+            const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + fileName + `.md`);
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
                 await this.vault.create(normalizedFileName, `## Tasks
 - [ ] `);
@@ -62,10 +62,10 @@ export  class FileCreator {
     async open_note(note: string = `Task_Planner`){
         
 		try{
-			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`), false)) {
-				new Notice('File exists ... opening')
+			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`), false)) {
+				//new Notice('File exists ... opening')
                 
-				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + note + `.md`, '', false, {                    
+				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`, '', false, {                    
 					active: true,
 				});
                 new Notice("Opened")

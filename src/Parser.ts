@@ -25,7 +25,7 @@ export class Parser {
 		this.act_tasks = 0;
 		this.day_no = 1;
 
-		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)\d+(\-|\/)\d+(\-|\/)\d+\s(\w+(\s|$))+$/gm)
+		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)\d+(\-|\/)\d+(\-|\/)\d+\s.+$/gm)
 		this.notifications = new Notifications(this.vault)
 		
 		while (this.day_no <= 7){
@@ -51,6 +51,7 @@ export class Parser {
 					for (let i = 0; i <= file_contents.length; i++){
 						let task_date = (await file_contents[i].match(/\d+/g))
 						let date_string = task_date[0] + task_date[1] + task_date[2]
+<<<<<<< HEAD
 						let neat_date_string = task_date[0] + '/' + task_date[1] + '/' + task_date[2]
 						let task_string = (await file_contents[i].match(/(?<=\d+(\-|\/)\d+(\-|\/)\d+\s)(\w+(\s|(?:$)))+(?:$)/))
 					
@@ -58,6 +59,18 @@ export class Parser {
 						//if (date_string != moment().format(this.settings.DateFormat)){
 						//	new Notice("No date" +date_string)//(date_match[0])
 						//}
+=======
+						let task_string = (await file_contents[i].match(/(?<=\d+(\-|\/)\d+(\-|\/)\d+\s)(.+(?:$))/))
+						//for  (let k = 0; i <= task_date.length; k++){
+					//		task_date
+					//	
+					//	}
+					
+
+						// if (date_string != moment().format(this.settings.DateFormat)){
+						// 	new Notice("No date" +date_string)//(date_match[0])
+						// }
+>>>>>>> 31320dac0cff797b084d195ff02d885788dee169
 						if (date_string == moment().format(this.settings.DateFormat)){
 							this.notifications.send_task_notif(task_string[0], "TASK DUE TODAY (" + neat_date_string + "): " )
 							
@@ -67,10 +80,16 @@ export class Parser {
 							this.TaskPlugin.calc_act_tasks(this.act_tasks)
 							//new Notice("Date" + date_string)//(date_match[0])
 						}
+						else{
+							if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+								this.notifications.send_task_notif(task_string[0], "Task Past Due (" + date_string + "): ")
+								this.act_tasks += 1;
+							}
+						}
 
 						new_contents = new_contents + `
-- [ ] `+ file_contents[i]
-						//this.notifications.send_notif(new_contents)
+- [ ] Hi`+ file_contents[i]
+						this.notifications.send_notif(new_contents)
 						this.vault.adapter.write(normalizedFileName, new_contents)
 					}
 					

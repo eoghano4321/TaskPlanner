@@ -1,0 +1,9 @@
+{
+  "OpenOnStart": true,
+  "SideButton": true,
+  "SendNotifs": false,
+  "CustomFolder": "TaskPlanners",
+  "CustomFile": "Task_Planner",
+  "DateFormat": "DDMMYYYY",
+  "StatusBar": false
+}

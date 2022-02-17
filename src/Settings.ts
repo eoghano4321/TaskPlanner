@@ -7,5 +7,6 @@ export class SETTINGS {
     CustomFolder: string = 'TaskPlanners';
     CustomFile: string = 'Task_Planner';
     DateFormat: string = "DDMMYYYY";
+    FileDateFormat: string = "YYYYMMDD";
     StatusBar: boolean = false;
 }
