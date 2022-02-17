@@ -113,7 +113,7 @@ export default class MyTaskPlugin extends Plugin {
 	public add_side_button(){
 		this.ribbonIconEl?.remove();
 		if (this.settings.SideButton ){	
-			this.ribbonIconEl = this.addRibbonIcon('crossed-star', 'Open Task Planner', (evt: MouseEvent) => {
+			this.ribbonIconEl = this.addRibbonIcon('checkmark', 'Open Task Planner', (evt: MouseEvent) => {
 				// Called when the user clicks the icon.
 			//	new Notice('Plugin clicked!');
 				new Notice('opening file')
@@ -187,14 +187,26 @@ export class SettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}))
 		
+		
 		new Setting(containerEl)
 				.setName('Date Format')
-				.setDesc('Date format for file name and task due dates\nDates in preexisting files need to be changed manually\nAutomatic date fixing coming soon')
+				.setDesc('Date format for task due dates. Dates in preexisting files need to be changed manually. Automatic date fixing coming soon')
 				.addText(text => text
 					.setPlaceholder('Date')
 					.setValue(this.plugin.settings.DateFormat)
 					.onChange(async (value) => {
 						this.plugin.settings.DateFormat = value;
+						await this.plugin.saveSettings();
+					}))
+		
+		new Setting(containerEl)
+				.setName('File Date Format')
+				.setDesc('Date format for file name prefix. This is separate to task date format')
+				.addText(text => text
+					.setPlaceholder('Date')
+					.setValue(this.plugin.settings.FileDateFormat)
+					.onChange(async (value) => {
+						this.plugin.settings.FileDateFormat = value;
 						await this.plugin.saveSettings();
 					}))
 			// .addText(text => text
