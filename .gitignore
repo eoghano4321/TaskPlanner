@@ -12,9 +12,11 @@ package-lock.json
 # Don't include the compiled main.js file in the repo.
 # They should be uploaded to GitHub releases instead.
 main.js
+main-HP_Pottamus.js
 
 # Exclude sourcemaps
 *.map
 
 # obsidian
 data.json
+data-HP_Pottamus.json
