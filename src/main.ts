@@ -30,8 +30,10 @@ export default class MyTaskPlugin extends Plugin {
 	vault : Vault;
 	settings: SETTINGS;
 	ribbonIconEl: HTMLElement | undefined = undefined;
+	status_bar : HTMLElement | undefined = undefined;
 	filecreator : FileCreator;
-	notifications : Notifications 
+	notifications : Notifications;
+	act_tasks : number;
 	
 
 	async loadSettings() {
@@ -43,12 +45,13 @@ export default class MyTaskPlugin extends Plugin {
 	
 
 	async onload(){
+		this.act_tasks = 0;
 		await this.loadSettings();
 		this.add_side_button();
 		
 		this.vault = this.app.vault;
 		this.notifications = new Notifications(this.vault);
-		this.filecreator = new FileCreator(this.vault, this.app, this.settings)
+		this.filecreator = new FileCreator(this.vault, this.app, this.settings, this)
 
 		// const normalizedPath = normalizePath(`'Task'`);
 		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
@@ -56,13 +59,14 @@ export default class MyTaskPlugin extends Plugin {
 		// this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
 
 		this.addSettingTab(new SettingTab(this.app, this));
-		
+		this.calc_act_tasks(this.act_tasks);
+
 		if (this.settings.OpenOnStart){
-			await this.app.workspace.onLayoutReady
-			this.filecreator.open_note()
+			await this.app.workspace.onLayoutReady;
+			await this.filecreator.open_note();
 		}
 
-
+		
 
 		// TODO Create a script to open note on startup
 		this.addCommand({
@@ -84,7 +88,7 @@ export default class MyTaskPlugin extends Plugin {
 			name: 'Create a Task Planner Note',
 			callback: () => {
 				this.filecreator.createFileIfNotExists(this.settings.CustomFile);
-				
+				//this.notifications.send_notif(String(this.act_tasks));
 				
 				// if (!FileExists){
 				// 	this.vault.create(normalizedPath, `## TASKKKKKS`);
@@ -123,7 +127,18 @@ export default class MyTaskPlugin extends Plugin {
 
 	}
 
-	
+
+	// TODO Add dynamic updating whenever file is changed
+	async calc_act_tasks(active_tasks : number){
+		this.act_tasks = active_tasks
+		//this.notifications.send_notif(String(this.act_tasks) + "HO")
+		this.status_bar?.remove();
+		this.status_bar = this.addStatusBarItem()
+		this.status_bar.onClickEvent((evt: MouseEvent) => {
+			this.filecreator.open_note(this.settings.CustomFile);
+		})
+		this.status_bar.setText(String(this.act_tasks) + ' Active Tasks')
+	}
 
 	
 }

@@ -12,12 +12,14 @@ export  class FileCreator {
 	settings: SETTINGS;
     notifications : Notifications;
     parser : Parser;
+    plugin : MyTaskPlugin;
 
-    constructor(vault : Vault, app : App, settings : SETTINGS){
+    constructor(vault : Vault, app : App, settings : SETTINGS, plugin : MyTaskPlugin){
         this.vault = vault;
         this.app = app;
         this.settings = settings;
-        this.parser = new Parser(this.vault, this.settings);
+        this.plugin = plugin;
+        this.parser = new Parser(this.vault, this.settings, this.plugin);
     }
 
     
@@ -35,6 +37,7 @@ export  class FileCreator {
                 //this.notifications.send_notif(normalizedFileName)
                 this.open_note(this.settings.CustomFile)
                 this.parser.parse_for_tasks()
+                //this.notifications.send_notif(String(await this.parser.parse_for_tasks()))
             }
             else{
                 new Notice(`File ${normalizedFileName} already exists`)
