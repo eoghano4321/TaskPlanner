@@ -25,14 +25,15 @@ export class Parser {
 		this.act_tasks = 0;
 		this.day_no = 1;
 
-		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)\d+(\-|\/)\d+(\-|\/)\d+\s.+$/gm)
+		// Accounts for natural date format
+		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm)
 		this.notifications = new Notifications(this.vault)
 		
 		while (this.day_no <= 7){
-			let yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.DateFormat) + `-` + this.settings.CustomFile + `.md`);
+			let yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
 		
 		
-			const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.DateFormat) + `-` + this.settings.CustomFile + `.md`);
+			const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
 
 			let new_contents = `## Task Planner`
 
@@ -52,7 +53,7 @@ export class Parser {
 						let task_date = (await file_contents[i].match(/\d+/g))
 						let date_string = task_date[0] + task_date[1] + task_date[2]
 						let neat_date_string = task_date[0] + '/' + task_date[1] + '/' + task_date[2]
-						let task_string = (await file_contents[i].match(/(?<=\d+(\-|\/)\d+(\-|\/)\d+\s)(.+(?:$))/))
+						let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
 					
 
 						//if (date_string != moment().format(this.settings.DateFormat)){
@@ -71,14 +72,14 @@ export class Parser {
 						}
 						else{
 							if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
-								this.notifications.send_task_notif(task_string[0], "Task Past Due (" + date_string + "): ")
+								this.notifications.send_task_notif(task_string[0], "Task Past Due (" + neat_date_string + "): ")
 								this.act_tasks += 1;
 							}
 						}
 
 						new_contents = new_contents + `
-- [ ] Hi`+ file_contents[i]
-						this.notifications.send_notif(new_contents)
+- [ ] `+ file_contents[i]
+						//this.notifications.send_notif(new_contents)
 						this.vault.adapter.write(normalizedFileName, new_contents)
 					}
 					
@@ -90,7 +91,6 @@ export class Parser {
 			}
 	
 		}
-		//return Number(this.act_tasks);
 	}
 
 }
