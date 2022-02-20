@@ -11,12 +11,21 @@ This is a task planning plugin for Obsidian (https://obsidian.md).
 - Automatically creates a daily note with all your active tasks
 - Set dates for tasks so you never fall behind
 - Get notifications when tasks are due
+- Supports Natural Language Dates plugin for fast date setting
 
 ### How to use
 
 - Install the plugin
-- Open the task note using the sidebar button
+- The plugin will automatically create the folder selected in the settings
+- Open the task note using the sidebar button or command
 - Use your preferred date format to set due dates and reminders
+
+```md
+- [ ] 31/01/2022 Add Plugin to Obsidian
+- [ ] 01/02/2022 Save the world
+- [ ] 02-02-2022 Make Pancakes
+
+```
 
 ### Manually installing the plugin
 

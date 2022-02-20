@@ -25,9 +25,9 @@ export class Parser {
 		this.act_tasks = 0;
 		this.day_no = 1;
 
-		// Accounts for natural date format
+		// Accounts for natural language date format
 		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm)
-		this.notifications = new Notifications(this.vault)
+		this.notifications = new Notifications(this.vault, this.settings)
 		
 		while (this.day_no <= 7){
 			let yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
