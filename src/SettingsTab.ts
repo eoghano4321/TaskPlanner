@@ -90,6 +90,7 @@ export class SettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}))
 		
+
 		
 			// .addText(text => text
 			// 	.setPlaceholder('Enter here')

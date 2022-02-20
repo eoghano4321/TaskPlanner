@@ -25,7 +25,7 @@ export  class FileCreator {
     
 
     async createFileIfNotExists(fileName: string) {
-        this.notifications = new Notifications(this.vault)
+        this.notifications = new Notifications(this.vault, this.settings)
         
         await this.createFolderIfNotExists(this.settings.CustomFolder)
         try {

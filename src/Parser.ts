@@ -9,6 +9,7 @@ export class Parser {
     vault : Vault;
     settings : SETTINGS;
 	act_tasks : number;
+	urg_tasks : number;
 	day_no : number;
 	TaskPlugin : MyTaskPlugin;
 
@@ -19,10 +20,59 @@ export class Parser {
     }
 
 	
-    
+    async update_act_tasks(){
+		this.act_tasks = 0;
+		this.urg_tasks = 0;
+		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm);
+		this.notifications = new Notifications(this.vault, this.settings);
+
+		const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+
+		if (await this.vault.adapter.exists(normalizedFileName, false)){
+			let file_contents = (await this.vault.adapter.read(normalizedFileName)).match(Regex);
+
+			if (!file_contents){
+				new Notice("No Active Tasks : )") //TODO Make this the status bar string
+			}else{
+				for (let i = 0; i <= file_contents.length; i++){
+					let task_date = (await file_contents[i].match(/\d+/g))
+					let date_string = task_date[0] + task_date[1] + task_date[2]
+					let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
+
+					if (new RegExp(/urgent/gi).test(task_string[0])){
+						this.urg_tasks += 1;
+						this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+						this.act_tasks += 1;
+						this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+					}else{
+						if (date_string == moment().format(this.settings.DateFormat)){
+
+							this.act_tasks += 1;
+							this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+
+						}
+						else{
+							if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+								this.act_tasks += 1;
+								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+								//new Notice(String(this.act_tasks))
+							}else{
+								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+								this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+							}
+						}
+					}
+				}
+
+			}
+
+		}
+
+	}
 
 	async parse_for_tasks(){
 		this.act_tasks = 0;
+		this.urg_tasks = 0;
 		this.day_no = 1;
 
 		// Accounts for natural language date format
@@ -62,6 +112,10 @@ export class Parser {
 						
 						if (new RegExp(/urgent/gi).test(task_string[0])){
 							this.notifications.send_task_notif(task_string[0], "URGENT TASK (" + neat_date_string + "): ")
+							this.urg_tasks += 1;
+							this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+							this.act_tasks += 1;
+							this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 						}
 						else{
 							if (date_string == moment().format(this.settings.DateFormat)){
@@ -70,13 +124,14 @@ export class Parser {
 								this.act_tasks += 1;
 								//this.TaskPlugin.act_tasks += 1;
 								//this.notifications.send_notif(String(this.TaskPlugin.act_tasks) + "HEHEH")
-								this.TaskPlugin.calc_act_tasks(this.act_tasks)
+								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 								//new Notice("Date" + date_string)//(date_match[0])
 							}
 							else{
 								if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
 									this.notifications.send_task_notif(task_string[0], "TASK PAST DUE (" + neat_date_string + "): ")
 									this.act_tasks += 1;
+									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 								}
 							}
 						}

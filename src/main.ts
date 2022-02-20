@@ -1,4 +1,4 @@
-import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, ToggleComponent, Vault, normalizePath, moment } from 'obsidian';
+import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, ToggleComponent, Vault, normalizePath, moment, WorkspaceLeaf } from 'obsidian';
 import type {Moment, WeekSpec } from 'moment';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
@@ -6,6 +6,8 @@ import {FileCreator} from "./CreateTaskNote"
 import {Notifications} from './Notifs';
 import {SETTINGS} from "./Settings";
 import { SettingTab } from './SettingsTab';
+import TaskView from './Taskview';
+import { Parser } from './Parser';
 // import { text } from 'stream/consumers';
 // import { send } from 'process';
 
@@ -32,9 +34,13 @@ export default class MyTaskPlugin extends Plugin {
 	settings: SETTINGS;
 	ribbonIconEl: HTMLElement | undefined = undefined;
 	status_bar : HTMLElement | undefined = undefined;
+	urg_status_bar : HTMLElement | undefined = undefined;
 	filecreator : FileCreator;
 	notifications : Notifications;
 	act_tasks : number;
+	urg_tasks : number;
+	task_view : TaskView;
+	parser : Parser;
 	
 
 	async loadSettings() {
@@ -47,6 +53,7 @@ export default class MyTaskPlugin extends Plugin {
 
 	async onload(){
 		this.act_tasks = 0;
+		this.urg_tasks = 0;
 		await this.loadSettings();
 		this.add_side_button();
 		
@@ -60,14 +67,16 @@ export default class MyTaskPlugin extends Plugin {
 		// this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
 
 		this.addSettingTab(new SettingTab(this.app, this));
-		this.calc_act_tasks(this.act_tasks);
+		this.calc_act_tasks(this.act_tasks, false);
+		this.calc_act_tasks(this.urg_tasks, true)
 
 		if (this.settings.OpenOnStart){
 			await this.app.workspace.onLayoutReady;
 			await this.filecreator.open_note();
 		}
 
-		
+		this.parser = new Parser(this.vault, this.settings, this)
+		this.parser.update_act_tasks()
 
 		// TODO Create a script to open note on startup
 		this.addCommand({
@@ -102,6 +111,20 @@ export default class MyTaskPlugin extends Plugin {
 
 		});
 
+		this.registerView('taskview', (leaf : WorkspaceLeaf) => (this.task_view = new TaskView(leaf, this.settings)))
+
+		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+			if (this.app.workspace.getActiveFile.toString() == this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`){
+				new Notice(this.app.workspace.getActiveFile.name );
+			}
+		});
+
+		this.registerInterval(window.setInterval(async () => {
+			this.parser.update_act_tasks();
+			
+		}, 4000));
+		
+
 	}
 
 	
@@ -129,16 +152,26 @@ export default class MyTaskPlugin extends Plugin {
 	}
 
 
-	// TODO Add dynamic updating whenever file is changed
-	async calc_act_tasks(active_tasks : number){
-		this.act_tasks = active_tasks
-		//this.notifications.send_notif(String(this.act_tasks) + "HO")
-		this.status_bar?.remove();
-		this.status_bar = this.addStatusBarItem()
-		this.status_bar.onClickEvent((evt: MouseEvent) => {
-			this.filecreator.open_note(this.settings.CustomFile);
-		})
-		this.status_bar.setText(String(this.act_tasks) + ' Active Tasks')
+	
+	async calc_act_tasks(active_tasks : number, is_urgent: boolean){
+		if(is_urgent){
+			this.urg_tasks = active_tasks
+			this.urg_status_bar?.remove();
+			this.urg_status_bar = this.addStatusBarItem()
+			this.urg_status_bar.onClickEvent((evt: MouseEvent) => {
+				this.filecreator.open_note(this.settings.CustomFile)
+			})
+			this.urg_status_bar.setText(String(this.urg_tasks) + ' Active Urgent Tasks')
+		}else{
+			this.act_tasks = active_tasks
+			//this.notifications.send_notif(String(this.act_tasks) + "HO")
+			this.status_bar?.remove();
+			this.status_bar = this.addStatusBarItem()
+			this.status_bar.onClickEvent((evt: MouseEvent) => {
+				this.filecreator.open_note(this.settings.CustomFile);
+			})
+			this.status_bar.setText(String(this.act_tasks) + ' Active Tasks')
+		}
 	}
 
 	
