@@ -71,8 +71,8 @@ export default class MyTaskPlugin extends Plugin {
 		this.calc_act_tasks(this.urg_tasks, true)
 
 		if (this.settings.OpenOnStart){
-			await this.app.workspace.onLayoutReady;
-			await this.filecreator.open_note();
+			//await this.app.workspace.onLayoutReady;
+			await this.filecreator.createFileIfNotExists('Task_Planner');
 		}
 
 		this.parser = new Parser(this.vault, this.settings, this)
@@ -111,13 +111,13 @@ export default class MyTaskPlugin extends Plugin {
 
 		});
 
-		this.registerView('taskview', (leaf : WorkspaceLeaf) => (this.task_view = new TaskView(leaf, this.settings)))
+		// this.registerView('taskview', (leaf : WorkspaceLeaf) => (this.task_view = new TaskView(leaf, this.settings)))
 
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			if (this.app.workspace.getActiveFile.toString() == this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`){
-				new Notice(this.app.workspace.getActiveFile.name );
-			}
-		});
+		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+		// 	if (this.app.workspace.getActiveFile.toString() == this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`){
+		// 		new Notice(this.app.workspace.getActiveFile.name );
+		// 	}
+		// });
 
 		this.registerInterval(window.setInterval(async () => {
 			this.parser.update_act_tasks();
@@ -127,6 +127,9 @@ export default class MyTaskPlugin extends Plugin {
 
 	}
 
+	onunload(): void {
+		
+	}
 	
 
 	async saveSettings(){
