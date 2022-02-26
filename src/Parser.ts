@@ -23,6 +23,7 @@ export class Parser {
     async update_act_tasks(){
 		this.act_tasks = 0;
 		this.urg_tasks = 0;
+		let date_string : string;
 		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm);
 		this.notifications = new Notifications(this.vault, this.settings);
 
@@ -36,7 +37,24 @@ export class Parser {
 			}else{
 				for (let i = 0; i <= file_contents.length; i++){
 					let task_date = (await file_contents[i].match(/\d+/g))
-					let date_string = task_date[0] + task_date[1] + task_date[2]
+
+					if(this.settings.DateFormat = 'DDMMYYYY'){
+						date_string = task_date[2] + task_date[1] + task_date[0]
+					}else{
+						if(this.settings.DateFormat = 'MMDDYYYY'){
+							date_string = task_date[2] + task_date[0] + task_date[1]
+						}else{
+							if(this.settings.DateFormat = 'YYYYMMDD'){
+								date_string = task_date[0] + task_date[1] + task_date[2]
+							}else{
+								if(this.settings.DateFormat = 'YYYYDDMM'){
+									date_string = task_date[0] + task_date[2] + task_date[1]
+								}else{
+									date_string = task_date[2] + task_date[1] + task_date[0]
+								}
+							}
+						}
+					}
 					let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
 
 					if(this.settings.Usernames && new RegExp(/\#/g).test(task_string[0])){
@@ -47,14 +65,14 @@ export class Parser {
 								this.act_tasks += 1;
 								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 							}else{
-								if (date_string == moment().format(this.settings.DateFormat)){
+								if (date_string == moment().format('YYYYMMDD')){
 	
 									this.act_tasks += 1;
 									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 	
 								}
 								else{
-									if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+									if (date_string <= moment().subtract(1, "days").format('YYYYMMDD')){
 										this.act_tasks += 1;
 										this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 										//new Notice(String(this.act_tasks))
@@ -72,14 +90,14 @@ export class Parser {
 							this.act_tasks += 1;
 							this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 						}else{
-							if (date_string == moment().format(this.settings.DateFormat)){
+							if (date_string == moment().format('YYYYMMDD')){
 
 								this.act_tasks += 1;
 								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 
 							}
 							else{
-								if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+								if (date_string <= moment().subtract(1, "days").format('YYYYMMDD')){
 									this.act_tasks += 1;
 									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 									//new Notice(String(this.act_tasks))
@@ -102,6 +120,8 @@ export class Parser {
 		this.act_tasks = 0;
 		this.urg_tasks = 0;
 		this.day_no = 1;
+		let date_string : string;
+		let neat_date_string : string;
 
 		// Accounts for natural language date format
 		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm)
@@ -129,8 +149,25 @@ export class Parser {
 					// this.notifications.send_notif("THERE ARE TASKS" + file_contents[0])
 					for (let i = 0; i <= file_contents.length; i++){
 						let task_date = (await file_contents[i].match(/\d+/g))
-						let date_string = task_date[0] + task_date[1] + task_date[2]
-						let neat_date_string = task_date[0] + '/' + task_date[1] + '/' + task_date[2]
+
+						if(this.settings.DateFormat = 'DDMMYYYY'){
+							date_string = task_date[2] + task_date[1] + task_date[0]
+						}else{
+							if(this.settings.DateFormat = 'MMDDYYYY'){
+								date_string = task_date[2] + task_date[0] + task_date[1]
+							}else{
+								if(this.settings.DateFormat = 'YYYYMMDD'){
+									date_string = task_date[0] + task_date[1] + task_date[2]
+								}else{
+									if(this.settings.DateFormat = 'YYYYDDMM'){
+										date_string = task_date[0] + task_date[2] + task_date[1]
+									}else{
+										date_string = task_date[2] + task_date[1] + task_date[0]
+									}
+								}
+							}
+						}
+						neat_date_string = task_date[0] + '/' + task_date[1] + '/' + task_date[2]
 						let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
 					
 
@@ -151,7 +188,7 @@ export class Parser {
 									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 								}
 								else{
-									if (date_string == moment().format(this.settings.DateFormat)){
+									if (date_string == moment().format('YYYYMMDD')){
 										this.notifications.send_task_notif(task_string[0], "TASK DUE TODAY (" + neat_date_string + "): " )
 										
 										this.act_tasks += 1;
@@ -161,7 +198,7 @@ export class Parser {
 										//new Notice("Date" + date_string)//(date_match[0])
 									}
 									else{
-										if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+										if (date_string <= moment().subtract(1, "days").format('YYYYMMDD')){
 											this.notifications.send_task_notif(task_string[0], "TASK PAST DUE (" + neat_date_string + "): ")
 											this.act_tasks += 1;
 											this.TaskPlugin.calc_act_tasks(this.act_tasks, false)

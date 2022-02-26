@@ -27,9 +27,7 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.OpenOnStart)
 					.onChange( async (value: boolean) => {	
 						this.plugin.settings.OpenOnStart = value;
-						this.plugin.notifications.send_notif(`This is the on start setting `,this.plugin.settings.OpenOnStart);
 						this.plugin.saveSettings();
-						//await this.plugin.loadSettings();
 				}));
 			
 		new Setting(containerEl)
@@ -41,10 +39,8 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.SideButton)
 					.onChange( async (value: boolean) => {	
 						this.plugin.settings.SideButton = value;
-						this.plugin.notifications.send_notif(`This is the sidebutton setting `, this.plugin.settings.SideButton);
 						this.plugin.add_side_button();
 						this.plugin.saveSettings();
-						//await this.plugin.loadSettings();
 				}));	
 		
 		new Setting(containerEl)
@@ -72,7 +68,8 @@ export class SettingTab extends PluginSettingTab {
 		
 		new Setting(containerEl)
 				.setName('Date Format')
-				.setDesc('Date format for task due dates. Dates in preexisting files need to be changed manually. Automatic date fixing coming soon')
+				.setDesc(`Date format for task due dates
+Please use  either **DDMMYYYY, MMDDYYYY, YYYYMMDD or YYYYDDMM**`)
 				.addText(text => text
 					.setPlaceholder('Date')
 					.setValue(this.plugin.settings.DateFormat)
@@ -83,7 +80,7 @@ export class SettingTab extends PluginSettingTab {
 		
 		new Setting(containerEl)
 				.setName('File Date Format')
-				.setDesc('Date format for file name prefix. This is separate to task date format')
+				.setDesc('Date format for file name prefix. This is different to task date format')
 				.addText(text => text
 					.setPlaceholder('Date')
 					.setValue(this.plugin.settings.FileDateFormat)
@@ -100,35 +97,23 @@ export class SettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.Usernames)
 				.onChange( async (value: boolean) => {	
 					this.plugin.settings.Usernames = value;
-					//username_tab.setDisabled(value)
 					this.plugin.saveSettings();
 			}));	
 		
-			//if(this.plugin.settings.Usernames){
-			new Setting(containerEl)
-				.setName('Username')
-				.setDesc('Username for this Task Planner user')
-				.addText(text => text
-					.setPlaceholder('Username')
-					.setValue(this.plugin.settings.Username)
-					.onChange(async (value) => {
-						this.plugin.settings.Username = value;
-						await this.plugin.saveSettings();
-					}))
+			
+		new Setting(containerEl)
+			.setName('Username')
+			.setDesc('Username for this Task Planner user')
+			.addText(text => text
+				.setPlaceholder('Username')
+				.setValue(this.plugin.settings.Username)
+				.onChange(async (value) => {
+					this.plugin.settings.Username = value;
+					await this.plugin.saveSettings();
+				}));
    
-		   //}
 			
 		
 		
-
-		
-			// .addText(text => text
-			// 	.setPlaceholder('Enter here')
-			// 	.setValue(this.plugin.settings.mySetting)
-			// 	.onChange(async (value) => {
-			// 		console.log('Secret: ' + value);
-			// 		this.plugin.settings.mySetting = value;
-			// 		await this.plugin.saveSettings();
-			// 	}));
 	}
 }
