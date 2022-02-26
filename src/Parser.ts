@@ -39,33 +39,61 @@ export class Parser {
 					let date_string = task_date[0] + task_date[1] + task_date[2]
 					let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
 
-					if (new RegExp(/urgent/gi).test(task_string[0])){
-						this.urg_tasks += 1;
-						this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
-						this.act_tasks += 1;
-						this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
-					}else{
-						if (date_string == moment().format(this.settings.DateFormat)){
-
-							this.act_tasks += 1;
-							this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
-
-						}
-						else{
-							if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+					if(this.settings.Usernames && new RegExp(/\#/g).test(task_string[0])){
+						if(new RegExp("(?<=\#)" + this.settings.Username).test(task_string[0])){
+							if (new RegExp(/urgent/gi).test(task_string[0])){
+								this.urg_tasks += 1;
+								this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
 								this.act_tasks += 1;
 								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
-								//new Notice(String(this.act_tasks))
 							}else{
+								if (date_string == moment().format(this.settings.DateFormat)){
+	
+									this.act_tasks += 1;
+									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+	
+								}
+								else{
+									if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+										this.act_tasks += 1;
+										this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+										//new Notice(String(this.act_tasks))
+									}else{
+										this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+										this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+									}
+								}
+							}
+						}
+					}else{
+						if (new RegExp(/urgent/gi).test(task_string[0])){
+							this.urg_tasks += 1;
+							this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+							this.act_tasks += 1;
+							this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+						}else{
+							if (date_string == moment().format(this.settings.DateFormat)){
+
+								this.act_tasks += 1;
 								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
-								this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+
+							}
+							else{
+								if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+									this.act_tasks += 1;
+									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+									//new Notice(String(this.act_tasks))
+								}else{
+									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+									this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+								}
 							}
 						}
 					}
 				}
 
 			}
-
+		
 		}
 
 	}
@@ -109,29 +137,64 @@ export class Parser {
 						//if (date_string != moment().format(this.settings.DateFormat)){
 						//	new Notice("No date" +date_string)//(date_match[0])
 						//}
-						
-						if (new RegExp(/urgent/gi).test(task_string[0])){
-							this.notifications.send_task_notif(task_string[0], "URGENT TASK (" + neat_date_string + "): ")
-							this.urg_tasks += 1;
-							this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
-							this.act_tasks += 1;
-							this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
-						}
-						else{
-							if (date_string == moment().format(this.settings.DateFormat)){
-								this.notifications.send_task_notif(task_string[0], "TASK DUE TODAY (" + neat_date_string + "): " )
-								
-								this.act_tasks += 1;
-								//this.TaskPlugin.act_tasks += 1;
-								//this.notifications.send_notif(String(this.TaskPlugin.act_tasks) + "HEHEH")
-								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
-								//new Notice("Date" + date_string)//(date_match[0])
-							}
-							else{
-								if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
-									this.notifications.send_task_notif(task_string[0], "TASK PAST DUE (" + neat_date_string + "): ")
+
+						//Checks if the account has enabled usernames
+						//If it has checks for #Username in the task string and only sends the notification if it is assigned to the person
+						//If it has no # it sends the notification to everyone
+						if(this.settings.Usernames && new RegExp(/\#/g).test(task_string[0])){
+							if(new RegExp("(?<=\#)" + this.settings.Username).test(task_string[0])){
+								if (new RegExp(/urgent/gi).test(task_string[0])){
+									this.notifications.send_task_notif(task_string[0], "URGENT TASK (" + neat_date_string + "): ")
+									this.urg_tasks += 1;
+									this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
 									this.act_tasks += 1;
 									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+								}
+								else{
+									if (date_string == moment().format(this.settings.DateFormat)){
+										this.notifications.send_task_notif(task_string[0], "TASK DUE TODAY (" + neat_date_string + "): " )
+										
+										this.act_tasks += 1;
+										//this.TaskPlugin.act_tasks += 1;
+										//this.notifications.send_notif(String(this.TaskPlugin.act_tasks) + "HEHEH")
+										this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+										//new Notice("Date" + date_string)//(date_match[0])
+									}
+									else{
+										if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+											this.notifications.send_task_notif(task_string[0], "TASK PAST DUE (" + neat_date_string + "): ")
+											this.act_tasks += 1;
+											this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+										}
+									}
+								}
+							}
+
+						}else{
+							//If not using the usernames it sends a notification for everyone and sets the tasks as active
+							if (new RegExp(/urgent/gi).test(task_string[0])){
+								this.notifications.send_task_notif(task_string[0], "URGENT TASK (" + neat_date_string + "): ")
+								this.urg_tasks += 1;
+								this.TaskPlugin.calc_act_tasks(this.urg_tasks, true)
+								this.act_tasks += 1;
+								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+							}
+							else{
+								if (date_string == moment().format(this.settings.DateFormat)){
+									this.notifications.send_task_notif(task_string[0], "TASK DUE TODAY (" + neat_date_string + "): " )
+									
+									this.act_tasks += 1;
+									//this.TaskPlugin.act_tasks += 1;
+									//this.notifications.send_notif(String(this.TaskPlugin.act_tasks) + "HEHEH")
+									this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+									//new Notice("Date" + date_string)//(date_match[0])
+								}
+								else{
+									if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+										this.notifications.send_task_notif(task_string[0], "TASK PAST DUE (" + neat_date_string + "): ")
+										this.act_tasks += 1;
+										this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
+									}
 								}
 							}
 						}

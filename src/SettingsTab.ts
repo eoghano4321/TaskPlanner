@@ -3,22 +3,24 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 
 export class SettingTab extends PluginSettingTab {
 	plugin: MyTaskPlugin;
+	
 
 	constructor(app: App, plugin: MyTaskPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
-
+	
 	display(): void {
 		const {containerEl} = this;
+		//let username_tab : any;
 		
 		containerEl.empty();
 
 		containerEl.createEl('h2', {text: 'Task Planner Settings'});
 
 		new Setting(containerEl)
-			.setName('Open on Start')
-			.setDesc('Open the Task Note on startup')
+			.setName('Create on Start')
+			.setDesc('Create the Task Note on startup')
 
 			.addToggle(toggle => 
 				toggle
@@ -89,6 +91,34 @@ export class SettingTab extends PluginSettingTab {
 						this.plugin.settings.FileDateFormat = value;
 						await this.plugin.saveSettings();
 					}))
+
+		new Setting(containerEl)
+		.setName('Usernames')
+		.setDesc('Assign tasks to specific people if syncing the planner accross multiple accounts to only show notifications to the necessary people')
+		.addToggle(toggle => 
+			toggle
+				.setValue(this.plugin.settings.Usernames)
+				.onChange( async (value: boolean) => {	
+					this.plugin.settings.Usernames = value;
+					//username_tab.setDisabled(value)
+					this.plugin.saveSettings();
+			}));	
+		
+			//if(this.plugin.settings.Usernames){
+			new Setting(containerEl)
+				.setName('Username')
+				.setDesc('Username for this Task Planner user')
+				.addText(text => text
+					.setPlaceholder('Username')
+					.setValue(this.plugin.settings.Username)
+					.onChange(async (value) => {
+						this.plugin.settings.Username = value;
+						await this.plugin.saveSettings();
+					}))
+   
+		   //}
+			
+		
 		
 
 		

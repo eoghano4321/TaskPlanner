@@ -65,7 +65,7 @@ export  class FileCreator {
 			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`), false)) {
 				//new Notice('File exists ... opening')
                 
-				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`, '', false, {                    
+				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`, '', true, {                    
 					active: true,
 				});
                 new Notice("Opened")

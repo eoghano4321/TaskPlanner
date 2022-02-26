@@ -9,4 +9,6 @@ export class SETTINGS {
     DateFormat: string = "DDMMYYYY";
     FileDateFormat: string = "YYYYMMDD";
     StatusBar: boolean = false;
+    Usernames : boolean = false;
+    Username : string = 'Username';
 }
