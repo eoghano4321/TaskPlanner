@@ -5,7 +5,7 @@ import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-inter
 import {FileCreator} from "./CreateTaskNote"
 import {Notifications} from './Notifs';
 import {SETTINGS} from "./Settings";
-import { SettingTab } from './SettingsTab';
+import { TaskSettingTab } from './SettingsTab';
 import TaskView from './Taskview';
 import { Parser } from './Parser';
 
@@ -59,7 +59,7 @@ export default class MyTaskPlugin extends Plugin {
 
 		
 
-		this.addSettingTab(new SettingTab(this.app, this));
+		this.addSettingTab(new TaskSettingTab(this.app, this));
 		this.calc_act_tasks(this.act_tasks, false);
 		this.calc_act_tasks(this.urg_tasks, true)
 

@@ -1,7 +1,7 @@
 import MyTaskPlugin from "./main";
 import { App, PluginSettingTab, Setting } from "obsidian";
 
-export class SettingTab extends PluginSettingTab {
+export class TaskSettingTab extends PluginSettingTab {
 	plugin: MyTaskPlugin;
 	
 
