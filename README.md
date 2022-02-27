@@ -18,12 +18,13 @@ This is a task planning plugin for Obsidian (https://obsidian.md).
 
 - Get notifications when tasks are due
 
+![Notifs](https://github.com/eoghano4321/TaskPlanner/blob/master/images/Notifications.png)
 
 - Supports Natural Language Dates plugin for fast date setting
 
 - Assign tasks to specific team members to manage a project through a shared vault
 
-```md
+```markdown
 
 ## Task Planner
 
@@ -41,7 +42,7 @@ This is a task planning plugin for Obsidian (https://obsidian.md).
 - Use your preferred date format to set due dates and reminders
 - Use Usernames to assign tasks to only specific people if sharing
 
-```md
+```markdown
 
 ## Task Planner
 
