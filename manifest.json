@@ -4,7 +4,6 @@
 	"version": "0.1.0",
 	"minAppVersion": "0.12.0",
 	"description": "This is a task planning plugin for Obsidian.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
+	"author": "Eoghan OMahony",
 	"isDesktopOnly": true
 }
