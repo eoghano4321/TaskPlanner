@@ -12,7 +12,6 @@ export class SettingTab extends PluginSettingTab {
 	
 	display(): void {
 		const {containerEl} = this;
-		//let username_tab : any;
 		
 		containerEl.empty();
 
@@ -103,7 +102,7 @@ Please use  either **DDMMYYYY, MMDDYYYY, YYYYMMDD or YYYYDDMM**`)
 			
 		new Setting(containerEl)
 			.setName('Username')
-			.setDesc('Username for this Task Planner user')
+			.setDesc('Username for this Task Planner user - Please do not use spaces')
 			.addText(text => text
 				.setPlaceholder('Username')
 				.setValue(this.plugin.settings.Username)

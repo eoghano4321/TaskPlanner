@@ -34,10 +34,8 @@ export  class FileCreator {
             if (!await this.vault.adapter.exists(normalizedFileName, false)) {
                 await this.vault.create(normalizedFileName, `## Tasks
 - [ ] `);
-                //this.notifications.send_notif(normalizedFileName)
                 this.open_note(this.settings.CustomFile)
                 this.parser.parse_for_tasks()
-                //this.notifications.send_notif(String(await this.parser.parse_for_tasks()))
             }
             else{
                 new Notice(`File ${normalizedFileName} already exists`)
@@ -63,7 +61,6 @@ export  class FileCreator {
         
 		try{
 			if (await this.vault.adapter.exists(await normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`), false)) {
-				//new Notice('File exists ... opening')
                 
 				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`, '', true, {                    
 					active: true,

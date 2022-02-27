@@ -8,8 +8,6 @@ import {SETTINGS} from "./Settings";
 import { SettingTab } from './SettingsTab';
 import TaskView from './Taskview';
 import { Parser } from './Parser';
-// import { text } from 'stream/consumers';
-// import { send } from 'process';
 
 
 
@@ -44,9 +42,7 @@ export default class MyTaskPlugin extends Plugin {
 	
 
 	async loadSettings() {
-		// this.settings = Object.assign({}, this.settings, await this.loadData());
 		this.settings = Object.assign(new SETTINGS(), await this.loadData());
-		//this.add_side_button();
 	}
 
 	
@@ -61,17 +57,13 @@ export default class MyTaskPlugin extends Plugin {
 		this.notifications = new Notifications(this.vault, this.settings);
 		this.filecreator = new FileCreator(this.vault, this.app, this.settings, this)
 
-		// const normalizedPath = normalizePath(`'Task'`);
-		// const FileExists = await this.vault.adapter.exists(normalizedPath, false);
-
-		// this.notifications.send_notif(`${this.settings.OpenOnStart}, ${this.settings.SideButton}, ${this.settings.CustomFolder}, ${this.settings.DateFormat}`)
+		
 
 		this.addSettingTab(new SettingTab(this.app, this));
 		this.calc_act_tasks(this.act_tasks, false);
 		this.calc_act_tasks(this.urg_tasks, true)
 
 		if (this.settings.OpenOnStart){
-			//await this.app.workspace.onLayoutReady;
 			await this.filecreator.createFileIfNotExists('Task_Planner');
 		}
 
@@ -83,11 +75,9 @@ export default class MyTaskPlugin extends Plugin {
 			id: 'open_task_planner',
 			name: 'Open Task Planner Note',
 			callback: () => {
-				//(file) => {
-				// activeFile.setFile(file).createDailyNote(date)
+				
 				new Notice('opening file', 0.2)
 				this.filecreator.open_note()
-				//}.
 			}	
 		});
 
@@ -98,13 +88,7 @@ export default class MyTaskPlugin extends Plugin {
 			name: 'Create a Task Planner Note',
 			callback: () => {
 				this.filecreator.createFileIfNotExists(this.settings.CustomFile);
-				//this.notifications.send_notif(String(this.act_tasks));
 				
-				// if (!FileExists){
-				// 	this.vault.create(normalizedPath, `## TASKKKKKS`);
-				// 	this.send_notif('File Created ');
-
-				// }
 
 
 			}
@@ -144,9 +128,9 @@ export default class MyTaskPlugin extends Plugin {
 	public add_side_button(){
 		this.ribbonIconEl?.remove();
 		if (this.settings.SideButton ){	
-			this.ribbonIconEl = this.addRibbonIcon('checkmark', 'Open Task Planner', (evt: MouseEvent) => {
+			this.ribbonIconEl = this.addRibbonIcon('crossed-star', 'Open Task Planner', (evt: MouseEvent) => {
 				// Called when the user clicks the icon.
-			//	new Notice('Plugin clicked!');
+
 				new Notice('opening file')
 				this.filecreator.open_note(this.settings.CustomFile);
 			});
@@ -164,7 +148,16 @@ export default class MyTaskPlugin extends Plugin {
 			this.urg_status_bar.onClickEvent((evt: MouseEvent) => {
 				this.filecreator.open_note(this.settings.CustomFile)
 			})
-			this.urg_status_bar.setText(String(this.urg_tasks) + ' Active Urgent Tasks')
+			if(this.urg_tasks == 0){
+				this.urg_status_bar.setText('No Urgent Tasks : )')
+			}else{
+				if(this.urg_tasks == 1){
+					this.urg_status_bar.setText(String(this.urg_tasks) + ' Active Urgent Task')
+				}else{
+					this.urg_status_bar.setText(String(this.urg_tasks) + ' Active Urgent Tasks')
+				}
+			}
+			
 		}else{
 			this.act_tasks = active_tasks
 			//this.notifications.send_notif(String(this.act_tasks) + "HO")
@@ -173,7 +166,16 @@ export default class MyTaskPlugin extends Plugin {
 			this.status_bar.onClickEvent((evt: MouseEvent) => {
 				this.filecreator.open_note(this.settings.CustomFile);
 			})
-			this.status_bar.setText(String(this.act_tasks) + ' Active Tasks')
+			if(this.act_tasks == 0){
+				this.status_bar.setText('No Active Tasks : )')
+			}else{
+				if(this.act_tasks == 1){
+					this.status_bar.setText(String(this.act_tasks) + ' Active Task')
+				}else{
+					this.status_bar.setText(String(this.act_tasks) + ' Active Tasks')
+				}
+			}
+			
 		}
 	}
 
