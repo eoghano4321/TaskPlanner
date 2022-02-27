@@ -71,5 +71,6 @@ This is a task planning plugin for Obsidian (https://obsidian.md).
 
 ### Manually installing the plugin
 
+- Download the [Latest Release](https://github.com/eoghano4321/TaskPlanner/releases/tag/v0.1.0)
 - Copy over `main.js` and `manifest.json` to your vault `VaultFolder/.obsidian/plugins/`.
 
