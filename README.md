@@ -14,6 +14,10 @@ This is a task planning plugin for Obsidian (https://obsidian.md).
 
 - Automatically creates a daily note with all your active tasks
 
+- Add a side bar button to access the task note with 1 click
+
+![SideBar](https://github.com/eoghano4321/TaskPlanner/blob/master/images/SideBar.png)
+
 - Set dates for tasks so you never fall behind
 
 - Get notifications when tasks are due
@@ -23,6 +27,10 @@ This is a task planning plugin for Obsidian (https://obsidian.md).
 - Supports Natural Language Dates plugin for fast date setting
 
 - Assign tasks to specific team members to manage a project through a shared vault
+
+- View your active task count in the status bar
+
+![StatusBar](https://github.com/eoghano4321/TaskPlanner/blob/master/images/Status%20Bar.png)
 
 ```markdown
 
