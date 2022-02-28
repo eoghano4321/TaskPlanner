@@ -203,7 +203,7 @@ export class Parser {
 								this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
 							}
 							else{
-								if (date_string == moment().format(this.settings.DateFormat)){
+								if (date_string == moment().format("YYYYMMDD")){
 									this.notifications.send_task_notif(task_string[0], "TASK DUE TODAY (" + neat_date_string + "): " )
 									
 									this.act_tasks += 1;
@@ -211,7 +211,7 @@ export class Parser {
 
 								}
 								else{
-									if (date_string <= moment().subtract(1, "days").format(this.settings.DateFormat)){
+									if (date_string <= moment().subtract(1, "days").format("YYYYMMDD")){
 										this.notifications.send_task_notif(task_string[0], "TASK PAST DUE (" + neat_date_string + "): ")
 										this.act_tasks += 1;
 										this.TaskPlugin.calc_act_tasks(this.act_tasks, false)
