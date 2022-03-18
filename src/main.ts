@@ -1,4 +1,4 @@
-import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, ToggleComponent, Vault, normalizePath, moment, WorkspaceLeaf } from 'obsidian';
+import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, ToggleComponent, Vault, normalizePath, moment, WorkspaceLeaf, Workspace, View } from 'obsidian';
 import type {Moment, WeekSpec } from 'moment';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
@@ -19,13 +19,13 @@ let date: Moment;
 
 
 
-declare global {
-	interface Window {
-	  app: App;
-	  moment: () => Moment;
-	  _bundledLocaleWeekSpec: WeekSpec;
-	}
-  }
+// declare global {
+// 	interface Window {
+// 	  app: App;
+// 	  moment: () => Moment;
+// 	  _bundledLocaleWeekSpec: WeekSpec;
+// 	}
+//   }
 
 export default class MyTaskPlugin extends Plugin {
 	vault : Vault;
@@ -39,7 +39,8 @@ export default class MyTaskPlugin extends Plugin {
 	urg_tasks : number;
 	task_view : TaskView;
 	parser : Parser;
-	
+	task_workspace : Workspace;
+	file : TFile;
 
 	async loadSettings() {
 		this.settings = Object.assign(new SETTINGS(), await this.loadData());
@@ -52,21 +53,26 @@ export default class MyTaskPlugin extends Plugin {
 		this.urg_tasks = 0;
 		await this.loadSettings();
 		this.add_side_button();
-		
 		this.vault = this.app.vault;
 		this.notifications = new Notifications(this.vault, this.settings);
 		this.filecreator = new FileCreator(this.vault, this.app, this.settings, this)
-
-		
+		this.task_workspace = this.app.workspace;
+		//this.vault.cachedRead(this.vault.getAbstractFileByPath(normalizePath('Task_Planner')))
 
 		this.addSettingTab(new TaskSettingTab(this.app, this));
 		this.calc_act_tasks(this.act_tasks, false);
 		this.calc_act_tasks(this.urg_tasks, true)
 
+		//this.task_workspace.onLayoutReady(() => {
 		if (this.settings.OpenOnStart){
-			await this.filecreator.createFileIfNotExists('Task_Planner');
+			this.filecreator.createFileIfNotExists('Task_Planner');
 		}
 
+	//	})
+		
+	
+		
+		
 		this.parser = new Parser(this.vault, this.settings, this)
 		this.parser.update_act_tasks()
 
@@ -102,16 +108,27 @@ export default class MyTaskPlugin extends Plugin {
 		// 		new Notice(this.app.workspace.getActiveFile.name );
 		// 	}
 		// });
+		
+		this.registerDomEvent(window, 'input', async () =>{
+			if(this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) instanceof TFile){
 
-		this.registerInterval(window.setInterval(async () => {
-			this.parser.update_act_tasks();
-			
-		}, 4000));
+				if((this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) == this.task_workspace.getActiveFile().path){
+					
+					this.update_tasks()
+					
+				}
+			}
+		})
 		
 
 	}
 
-	onunload(): void {
+	async update_tasks(){
+		
+		this.registerInterval(window.setTimeout(() => {
+			this.parser.update_act_tasks();
+		}, 3000))
+		
 		
 	}
 	
@@ -121,7 +138,7 @@ export default class MyTaskPlugin extends Plugin {
 
 	}
 
-	
+
 
 	
 
@@ -131,7 +148,7 @@ export default class MyTaskPlugin extends Plugin {
 			this.ribbonIconEl = this.addRibbonIcon('crossed-star', 'Open Task Planner', (evt: MouseEvent) => {
 				// Called when the user clicks the icon.
 
-				new Notice('opening file')
+				//new Notice('opening file')
 				this.filecreator.open_note(this.settings.CustomFile);
 			});
 		}

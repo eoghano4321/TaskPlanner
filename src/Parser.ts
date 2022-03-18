@@ -1,4 +1,4 @@
-import { App, Notice, normalizePath, Vault, moment } from "obsidian"
+import { App, Notice, normalizePath, Vault, moment, TFile } from "obsidian"
 import MyTaskPlugin from "./main";
 import {Notifications} from "./Notifs"
 import { SETTINGS } from "./Settings";
@@ -27,16 +27,18 @@ export class Parser {
 		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm);
 		this.notifications = new Notifications(this.vault, this.settings);
 
-		const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
-
-		if (await this.vault.adapter.exists(normalizedFileName, false)){
-			let file_contents = (await this.vault.adapter.read(normalizedFileName)).match(Regex);
+		//const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+		const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
+		//this.vault.adapter.exists(normalizedFileName, false)
+		
+		if (this.vault.getFiles().contains(task_file)){
+			let file_contents = (await this.vault.cachedRead(task_file)).match(Regex);
 
 			if (!file_contents){
 				new Notice("No Active Tasks : )") 
 			}else{
 				for (let i = 0; i <= file_contents.length; i++){
-					let task_date = (await file_contents[i].match(/\d+/g))
+					let task_date = (file_contents[i].match(/\d+/g))
 
 					if(this.settings.DateFormat = 'DDMMYYYY'){
 						date_string = task_date[2] + task_date[1] + task_date[0]
@@ -126,21 +128,22 @@ export class Parser {
 		this.notifications = new Notifications(this.vault, this.settings)
 		
 		while (this.day_no <= 7){
-			let yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+			//let yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+			let yes_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
 		
-		
-			const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+			//const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+			const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
 
 			let new_contents = `## Task Planner`
 
-			if (await this.vault.adapter.exists(yesterday_file, false)){
-				let file_contents = (await this.vault.adapter.read(yesterday_file)).match(Regex);
+			if (this.vault.getFiles().contains(yes_file)){
+				let file_contents = (await this.vault.cachedRead(yes_file)).match(Regex);
 				
 				if (!file_contents){
-					new Notice("No Tasks in previous note: " + moment().subtract(this.day_no, "days").format(this.settings.DateFormat))
+					
 				}else{
 					for (let i = 0; i <= file_contents.length; i++){
-						let task_date = (await file_contents[i].match(/\d+/g))
+						let task_date = (file_contents[i].match(/\d+/g))
 
 						if(this.settings.DateFormat = 'DDMMYYYY'){
 							date_string = task_date[2] + task_date[1] + task_date[0]
@@ -160,7 +163,7 @@ export class Parser {
 							}
 						}
 						neat_date_string = task_date[0] + '/' + task_date[1] + '/' + task_date[2]
-						let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
+						let task_string = (file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
 					
 
 						//Checks if the account has enabled usernames
@@ -222,7 +225,8 @@ export class Parser {
 						new_contents = new_contents + `
 - [ ] `+ file_contents[i]
 
-						this.vault.adapter.write(normalizedFileName, new_contents)
+						this.vault.modify(task_file, new_contents)
+						
 					}
 					
 				}
