@@ -119,7 +119,7 @@ export default class MyTaskPlugin extends Plugin {
 				}
 			}
 		})
-		this.registerDomEvent(window, 'click', async () =>{
+		this.registerDomEvent(window, 'change', async () =>{
 			if(this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) instanceof TFile){
 
 				if((this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) == this.task_workspace.getActiveFile().path){
