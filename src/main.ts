@@ -1,4 +1,4 @@
-import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, ToggleComponent, Vault, normalizePath, moment, WorkspaceLeaf, Workspace, View } from 'obsidian';
+import { FileView, App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, TAbstractFile, ToggleComponent, Vault, normalizePath, moment, Workspace, debounce } from 'obsidian';
 import type {Moment, WeekSpec } from 'moment';
 import { createDailyNote, getDailyNoteSettings} from 'obsidian-daily-notes-interface';
 
@@ -19,14 +19,6 @@ let date: Moment;
 
 
 
-// declare global {
-// 	interface Window {
-// 	  app: App;
-// 	  moment: () => Moment;
-// 	  _bundledLocaleWeekSpec: WeekSpec;
-// 	}
-//   }
-
 export default class MyTaskPlugin extends Plugin {
 	vault : Vault;
 	settings: SETTINGS;
@@ -41,12 +33,15 @@ export default class MyTaskPlugin extends Plugin {
 	parser : Parser;
 	task_workspace : Workspace;
 	file : TFile;
+	task_file : string
 
 	async loadSettings() {
 		this.settings = Object.assign(new SETTINGS(), await this.loadData());
 	}
 
-	
+	update_tasks = debounce(() => {
+		this.parser.update_act_tasks();
+	}, 3000);
 
 	async onload(){
 		this.act_tasks = 0;
@@ -57,18 +52,20 @@ export default class MyTaskPlugin extends Plugin {
 		this.notifications = new Notifications(this.vault, this.settings);
 		this.filecreator = new FileCreator(this.vault, this.app, this.settings, this)
 		this.task_workspace = this.app.workspace;
-		//this.vault.cachedRead(this.vault.getAbstractFileByPath(normalizePath('Task_Planner')))
-
+		this.task_file = this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`
+		
 		this.addSettingTab(new TaskSettingTab(this.app, this));
-		this.calc_act_tasks(this.act_tasks, false);
-		this.calc_act_tasks(this.urg_tasks, true)
+		// this.calc_act_tasks(this.act_tasks, false);
+		// this.calc_act_tasks(this.urg_tasks, true)
 
-		//this.task_workspace.onLayoutReady(() => {
-		if (this.settings.OpenOnStart){
-			this.filecreator.createFileIfNotExists('Task_Planner');
-		}
+		
 
-	//	})
+		this.task_workspace.onLayoutReady(() => {
+			if (this.settings.OpenOnStart){
+				this.filecreator.createFileIfNotExists('Task_Planner');
+			}
+			
+		})
 		
 	
 		
@@ -76,19 +73,17 @@ export default class MyTaskPlugin extends Plugin {
 		this.parser = new Parser(this.vault, this.settings, this)
 		this.parser.update_act_tasks()
 
-		// TODO Create a script to open note on startup
+		
 		this.addCommand({
 			id: 'open_task_planner',
 			name: 'Open Task Planner Note',
 			callback: () => {
 				
-				new Notice('opening file', 0.2)
 				this.filecreator.open_note()
 			}	
 		});
 
-		// TODO add a function to create a folder if 1 doesn't exist
-		// TODO add date to file name
+		
 		this.addCommand({
 			id: 'create_task_note',
 			name: 'Create a Task Planner Note',
@@ -108,38 +103,52 @@ export default class MyTaskPlugin extends Plugin {
 		// 		new Notice(this.app.workspace.getActiveFile.name );
 		// 	}
 		// });
+		// if(this.vault.on('modify', () => this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`))){
+		// 	new Notice("Maybe?")
+		// }
 		
-		this.registerDomEvent(window, 'input', async () =>{
-			if(this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) instanceof TFile){
-
-				if((this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) == this.task_workspace.getActiveFile().path){
+		
+		
+		// this.registerDomEvent(window, 'input', async () =>{
+		if(this.vault.getAbstractFileByPath(this.task_file) instanceof TFile){
+			
+			if((this.task_file) == this.task_workspace.getActiveFile().path){
+				this.registerEvent(this.vault.on("modify",  () => {
 					
-					this.update_tasks()
-					
-				}
+					this.update_tasks();
+				}))
+				
 			}
-		})
-		this.registerDomEvent(window, 'change', async () =>{
-			if(this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) instanceof TFile){
+		}
+		// })
+		// this.registerDomEvent(window, 'change', async () =>{
+		// 	if(this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) instanceof TFile){
 
-				if((this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) == this.task_workspace.getActiveFile().path){
+		// 		if((this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) == this.task_workspace.getActiveFile().path){
 					
-					this.update_tasks()
+		// 			this.update_tasks()
 					
-				}
-			}
-		})
+		// 		}
+		// 	}
+		// })
 
 	}
 
-	async update_tasks(){
+
+
+	// async update_tasks(){
+	// 	new Notice("Update Tasks")
+	// 	debounce(() => {
+	// 		new Notice("Updating")
+	// 		this.parser.update_act_tasks();
+			
+	// 	}, 100);
+	// 	// this.registerInterval(window.setTimeout(() => {
+	// 	// 	this.parser.update_act_tasks();
+	// 	// }, 3000))
 		
-		this.registerInterval(window.setTimeout(() => {
-			this.parser.update_act_tasks();
-		}, 3000))
 		
-		
-	}
+	// }
 	
 
 	async saveSettings(){
@@ -154,11 +163,11 @@ export default class MyTaskPlugin extends Plugin {
 	public add_side_button(){
 		this.ribbonIconEl?.remove();
 		if (this.settings.SideButton ){	
-			this.ribbonIconEl = this.addRibbonIcon('crossed-star', 'Open Task Planner', (evt: MouseEvent) => {
+			this.ribbonIconEl = this.addRibbonIcon('lucide-list-checks', 'Open Task Planner', (evt: MouseEvent) => {
 				// Called when the user clicks the icon.
 
 				//new Notice('opening file')
-				this.filecreator.open_note(this.settings.CustomFile);
+				this.filecreator.open_note(this.task_file);
 			});
 		}
 
@@ -172,7 +181,7 @@ export default class MyTaskPlugin extends Plugin {
 			this.urg_status_bar?.remove();
 			this.urg_status_bar = this.addStatusBarItem()
 			this.urg_status_bar.onClickEvent((evt: MouseEvent) => {
-				this.filecreator.open_note(this.settings.CustomFile)
+				this.filecreator.open_note(this.task_file)
 			})
 			if(this.urg_tasks == 0){
 				this.urg_status_bar.setText('No Urgent Tasks : )')

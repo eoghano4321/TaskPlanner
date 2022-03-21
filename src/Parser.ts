@@ -27,11 +27,11 @@ export class Parser {
 		let Regex : RegExp = RegExp(/(?<=^\-\s\[\s\]\s)((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s.+$/gm);
 		this.notifications = new Notifications(this.vault, this.settings);
 
-		//const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
-		const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
-		//this.vault.adapter.exists(normalizedFileName, false)
 		
-		if (this.vault.getFiles().contains(task_file)){
+		const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
+		
+		
+		if (task_file instanceof TFile){
 			let file_contents = (await this.vault.cachedRead(task_file)).match(Regex);
 
 			if (!file_contents){
@@ -57,7 +57,7 @@ export class Parser {
 							}
 						}
 					}
-					let task_string = (await file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
+					let task_string = (file_contents[i].match(/(?<=((\d+(\-|\/)\d+(\-|\/)\d+)|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\]\])|(\[\[\d+(\-|\/)\d+(\-|\/)\d+\|\w+\]\]))\s)(.+(?:$))/))
 
 					if(this.settings.Usernames && new RegExp(/\#/g).test(task_string[0])){
 						if(new RegExp("(?<=\#)" + this.settings.Username).test(task_string[0])){
@@ -128,15 +128,15 @@ export class Parser {
 		this.notifications = new Notifications(this.vault, this.settings)
 		
 		while (this.day_no <= 7){
-			//let yesterday_file  = normalizePath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+			
 			let yes_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment().subtract(this.day_no, "days").format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
 		
-			//const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`);
+			
 			const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`) as TFile;
 
 			let new_contents = `## Task Planner`
 
-			if (this.vault.getFiles().contains(yes_file)){
+			if (yes_file instanceof TFile){
 				let file_contents = (await this.vault.cachedRead(yes_file)).match(Regex);
 				
 				if (!file_contents){

@@ -29,19 +29,19 @@ export  class FileCreator {
         
         await this.createFolderIfNotExists(this.settings.CustomFolder)
         try {
-
-            const normalizedFileName = normalizePath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + fileName + `.md`);
-            const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + fileName + `.md`) as TFile;
+            let task_path = this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + fileName + `.md`;
+            const normalizedFileName = normalizePath(task_path);
+            const task_file = this.vault.getAbstractFileByPath(task_path) as TFile;
             if (!this.vault.getFiles().contains(task_file)) {
                 await this.vault.create(normalizedFileName, `## Tasks
 - [ ] `);
-                this.open_note(this.settings.CustomFile)
+                this.open_note(task_path)
                 this.parser.parse_for_tasks()
             }
             
         } catch (error) {
             console.log(`Error ${error}`);
-            //this.notifications.send_notif(`Error ${error}`)
+            
         }
     }
 
@@ -49,7 +49,7 @@ export  class FileCreator {
         try {
             
             const normalizedPath = normalizePath(folderName);
-            //const folderExists = this.vault.getRoot().children.contains(this.vault.getAbstractFileByPath(folderName); //await this.vault.adapter.exists(normalizedPath, false)
+            
             if(!this.vault.getRoot().children.contains(this.vault.getAbstractFileByPath(folderName))) {
               await this.vault.createFolder(normalizedPath);
             }
@@ -58,19 +58,19 @@ export  class FileCreator {
         }
     }
     
-    async open_note(note: string = `Task_Planner`){
-        const task_file = this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`) as TFile;
+    async open_note(note_path: string = `Task_Planner`){
+        const task_file = this.vault.getAbstractFileByPath(note_path) as TFile;
 		try{
-			if (this.vault.getFiles().contains(task_file)) {
+			if (task_file instanceof TFile) {
                 
-				await this.app.workspace.openLinkText(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + note + `.md`, '', true, {                    
+				await this.app.workspace.openLinkText(task_file.path, '', true, {                    
 					active: true,
 				});
-                //new Notice("Opened")
+                
 			}
 			else{
-				//new Notice('File doesn\'t exist .... Creating file')
-				this.createFileIfNotExists(note)
+				
+				this.createFileIfNotExists("Task_Planner")
 			}
 		} catch (error){
 			console.log(`Error ${error}`);
