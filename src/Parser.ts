@@ -34,9 +34,7 @@ export class Parser {
 		if (task_file instanceof TFile){
 			let file_contents = (await this.vault.cachedRead(task_file)).match(Regex);
 
-			if (!file_contents){
-				new Notice("No Active Tasks : )") 
-			}else{
+			if (file_contents){
 				for (let i = 0; i <= file_contents.length; i++){
 					let task_date = (file_contents[i].match(/\d+/g))
 

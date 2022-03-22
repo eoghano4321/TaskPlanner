@@ -55,8 +55,6 @@ export default class MyTaskPlugin extends Plugin {
 		this.task_file = this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`
 		
 		this.addSettingTab(new TaskSettingTab(this.app, this));
-		// this.calc_act_tasks(this.act_tasks, false);
-		// this.calc_act_tasks(this.urg_tasks, true)
 
 		
 
@@ -96,59 +94,22 @@ export default class MyTaskPlugin extends Plugin {
 
 		});
 
-		// this.registerView('taskview', (leaf : WorkspaceLeaf) => (this.task_view = new TaskView(leaf, this.settings)))
-
-		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-		// 	if (this.app.workspace.getActiveFile.toString() == this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + this.settings.CustomFile + `.md`){
-		// 		new Notice(this.app.workspace.getActiveFile.name );
-		// 	}
-		// });
-		// if(this.vault.on('modify', () => this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`))){
-		// 	new Notice("Maybe?")
-		// }
 		
-		
-		
-		// this.registerDomEvent(window, 'input', async () =>{
-		if(this.vault.getAbstractFileByPath(this.task_file) instanceof TFile){
+		// if(this.vault.getAbstractFileByPath(this.task_file) instanceof TFile){
 			
-			if((this.task_file) == this.task_workspace.getActiveFile().path){
-				this.registerEvent(this.vault.on("modify",  () => {
-					
-					this.update_tasks();
-				}))
-				
+			// if((this.task_file) == this.task_workspace.getActiveFile().path){
+		this.registerEvent(this.vault.on("modify",  (abstract_file: TAbstractFile) => {
+			if(abstract_file == this.vault.getAbstractFileByPath(this.task_file)){
+				this.update_tasks(); 
 			}
-		}
-		// })
-		// this.registerDomEvent(window, 'change', async () =>{
-		// 	if(this.vault.getAbstractFileByPath(this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) instanceof TFile){
-
-		// 		if((this.settings.CustomFolder + `/` + moment(new Date()).format(this.settings.FileDateFormat) + `-` + `Task_Planner` + `.md`) == this.task_workspace.getActiveFile().path){
-					
-		// 			this.update_tasks()
-					
-		// 		}
-		// 	}
-		// })
-
+		}))
+				
+			
 	}
 
 
 
-	// async update_tasks(){
-	// 	new Notice("Update Tasks")
-	// 	debounce(() => {
-	// 		new Notice("Updating")
-	// 		this.parser.update_act_tasks();
-			
-	// 	}, 100);
-	// 	// this.registerInterval(window.setTimeout(() => {
-	// 	// 	this.parser.update_act_tasks();
-	// 	// }, 3000))
-		
-		
-	// }
+	
 	
 
 	async saveSettings(){
@@ -166,7 +127,6 @@ export default class MyTaskPlugin extends Plugin {
 			this.ribbonIconEl = this.addRibbonIcon('lucide-list-checks', 'Open Task Planner', (evt: MouseEvent) => {
 				// Called when the user clicks the icon.
 
-				//new Notice('opening file')
 				this.filecreator.open_note(this.task_file);
 			});
 		}
@@ -194,8 +154,7 @@ export default class MyTaskPlugin extends Plugin {
 			}
 			
 		}else{
-			this.act_tasks = active_tasks
-			//this.notifications.send_notif(String(this.act_tasks) + "HO")
+			this.act_tasks = active_tasks;
 			this.status_bar?.remove();
 			this.status_bar = this.addStatusBarItem()
 			this.status_bar.onClickEvent((evt: MouseEvent) => {
